@@ -309,6 +309,7 @@ CyFxBulkLpApplnUSBSetupCB (
     uint8_t  bType, bTarget;
     uint16_t wValue, wIndex;
     CyBool_t isHandled = CyFalse;
+    CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
     /* Decode the fields from the setup request. */
     bReqType = (setupdat0 & CY_U3P_USB_REQUEST_TYPE_MASK);
@@ -363,7 +364,23 @@ CyFxBulkLpApplnUSBSetupCB (
                 }
             }
         }
-    } else if (bType == CY_U3P_USB_CLASS_RQT) {
+        else if ((bTarget == CY_U3P_USB_TARGET_INTF) && (bRequest == CY_U3P_USB_SC_GET_DESCRIPTOR)) {
+            switch (wValue >> 8) {
+                case CY_U3P_USB_REPORT_DESCR:
+                    status = CyU3PUsbSendEP0Data (
+                        (CyFxUSBReportDscr[0] | ((uint16_t)CyFxUSBReportDscr[1] << 8)),
+                        &CyFxUSBReportDscr[2]
+                    );
+                    isHandled = CyTrue;
+                    if (status == CY_U3P_SUCCESS) {
+                        CyU3PUsbAckSetup ();
+                    } else {
+                        /* This is an unhandled setup command. Stall the EP. */
+                        CyU3PUsbStall (0, CyTrue, CyFalse);
+                    }
+                    break;
+            }
+        }
     }
     return isHandled;
 }

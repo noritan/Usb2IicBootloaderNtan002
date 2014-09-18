@@ -269,6 +269,7 @@ const uint8_t CyFxUSBFSConfigDscr[] __attribute__ ((aligned (32))) =
 /* Standard full speed configuration descriptor */
 const uint8_t CyFxUSBReportDscr[] __attribute__ ((aligned (32))) =
 {
+        /* Descriptor Size (Not part of descriptor)*/ 0x2Bu, 0x00u,
         /* USAGE_PAGE                              */ 0x06u, 0xA0u, 0xFFu,
         /* USAGE                                   */ 0x09u, 0x01u,
         /* COLLECTION                              */ 0xA1u, 0x01u,
