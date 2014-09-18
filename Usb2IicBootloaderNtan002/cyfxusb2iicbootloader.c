@@ -363,8 +363,8 @@ CyFxBulkLpApplnUSBSetupCB (
                 }
             }
         }
+    } else if (bType == CY_U3P_USB_CLASS_RQT) {
     }
-
     return isHandled;
 }
 
