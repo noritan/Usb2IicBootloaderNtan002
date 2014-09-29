@@ -56,6 +56,10 @@ CyU3PDmaChannel glChHandleBulkLpOut;     /* DMA MANUAL_OUT channel handle.      
 
 CyBool_t glIsApplnActive = CyFalse;      /* Whether the loopback application is active or not. */
 
+// Internal status for bridge control
+uint8_t         i2cSpeed = CONFIG_400K;
+uint8_t         power = POWER_NONE;
+
 
 /* Application Error Handler */
 void
