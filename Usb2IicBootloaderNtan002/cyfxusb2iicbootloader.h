@@ -47,6 +47,8 @@
 #define CY_FX_EP_CONSUMER_SOCKET        CY_U3P_UIB_SOCKET_CONS_1    /* Socket 1 is consumer */
 
 #define CY_FX_EP_PACKET_SIZE            (64)                    // Max packet size
+#define CY_FX_I2C_PAYLOAD_SIZE          (CY_FX_EP_PACKET_SIZE-3)    // Max payload for I2C
+
 
 #define CY_FX_BULKLP_DMA_BUF_COUNT      (8)                       /* Bulk loop channel buffer count */
 #define CY_FX_BULKLP_DMA_TX_SIZE        (0)                       /* DMA transfer size is set to infinite */
@@ -88,6 +90,71 @@
 
 /* Byte value that is filled into the source buffers that FX3 sends out. */
 #define CY_FX_BULKSRCSINK_PATTERN            (0xAA)
+
+//******************************************************
+// Command format declaration
+//
+//  outBuf[0] : Control bits
+//    7 6 5 4 3 2 1 0
+//    | | | | | | | +-- R/W
+//    | | | | | | +---- START
+//    | | | | +-------- STOP
+//    | | +------------ CONFIG
+//
+#define     CTRL_RW             (0x01u)
+#define     CTRL_START          (0x02u)
+#define     CTRL_STOP           (0x08u)
+#define     CTRL_CONFIG         (0x20u)
+
+//  CONFIGURATION COMMAND
+//
+//  outBuf[0] : Configuration code
+//    7 6 5 4 3 2 1 0
+//    0 0 1   | |
+//            +-+------ SPEED
+//
+//  SPEED
+//    00 : 100kHz
+//    01 : 400kHz
+//    10 : 50kHz
+//
+#define     CONFIG_SPEED        (0x0cu)
+#define     CONFIG_100K         (0x00u)
+#define     CONFIG_400K         (0x04u)
+#define     CONFIG_50K          (0x08u)
+
+//  Length field for generic commands
+//
+//  outBuf[1] : Long
+
+//  Command code/Slave address field
+//
+//  dataOut[2] : Command
+//    7 6 5 4 3 2 1 0
+//    | +-+-+-+-+-+-+-- Command code/Slave address
+//    +---------------- Internal command
+//
+#define     COM_INTERNAL        (0x80u)
+#define     COM_STATUS          (0x80u)
+#define     COM_VERSION         (0x81u)
+
+//  Status code
+//
+//  inBuf[0] : Status
+//    7 6 5 4 3 2 1 0
+//    | | | | | | | +-- ACK
+//    | | | | | +------ VTARG
+//
+#define     STAT_ACK            (0x01u)
+#define     STAT_VTARG          (0x04u)
+
+//  Power code
+#define     POWER_NONE          (0x00u)
+#define     POWER_5p0V          (0x01u)
+#define     POWER_3p3V          (0x02u)
+
+//******************************************************
+
 
 /* Extern definitions for the USB Descriptors */
 extern const uint8_t CyFxUSB20DeviceDscr[];
