@@ -444,6 +444,15 @@ void
 CyFxBulkLpApplnInit (void)
 {
     CyU3PReturnStatus_t apiRetStatus = CY_U3P_SUCCESS;
+    static uint8_t CyFxUSBSerialDscr[] __attribute__ ((aligned (32))) =
+    {
+        0x22,                           /* Descriptor size */
+        CY_U3P_USB_STRING_DESCR,        /* Device descriptor type */
+        '0',0x00,'0',0x00,'0',0x00,'0',0x00,
+        '0',0x00,'0',0x00,'0',0x00,'0',0x00,
+        '0',0x00,'0',0x00,'0',0x00,'0',0x00,
+        '0',0x00,'0',0x00,'0',0x00,'0',0x00,
+    };
 
     /* Start the USB functionality. */
     apiRetStatus = CyU3PUsbStart();
@@ -540,6 +549,14 @@ CyFxBulkLpApplnInit (void)
 
     /* String descriptor 2 */
     apiRetStatus = CyU3PUsbSetDesc(CY_U3P_USB_SET_STRING_DESCR, 2, (uint8_t *)CyFxUSBProductDscr);
+    if (apiRetStatus != CY_U3P_SUCCESS)
+    {
+        CyU3PDebugPrint (4, "USB set string descriptor failed, Error code = %d\n", apiRetStatus);
+        CyFxAppErrorHandler(apiRetStatus);
+    }
+
+    /* String descriptor 3 */
+    apiRetStatus = CyU3PUsbSetDesc(CY_U3P_USB_SET_STRING_DESCR, 3, (uint8_t *)CyFxUSBSerialDscr);
     if (apiRetStatus != CY_U3P_SUCCESS)
     {
         CyU3PDebugPrint (4, "USB set string descriptor failed, Error code = %d\n", apiRetStatus);
