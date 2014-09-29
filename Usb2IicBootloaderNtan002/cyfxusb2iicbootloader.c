@@ -560,10 +560,16 @@ uint8_t
 parseCommand(CyU3PDmaBuffer_t *inBuf, CyU3PDmaBuffer_t *outBuf) {
     uint8_t     i;
     uint8_t     k;
+    uint8_t     control;        // Control bits
+    uint8_t     dataLength;     // data length field
+    uint8_t     command;        // command code field
+    uint8_t     slaveAddress;   // slave address field
     char        debugLine[512];
     static const char hexdigit[16] = "0123456789ABCDEF";
+    static const uint8_t version[] = {0, 0, 0, 1, 0x01, 0x23, 0x00, 0xA5};
 
-    k = 0;
+    strcpy(debugLine, "inBuf: ");
+    k = strlen(debugLine);
     for (i = 0; i < inBuf->count; i++) {
         debugLine[k++] = hexdigit[(inBuf->buffer[i]) >> 4];
         debugLine[k++] = hexdigit[(inBuf->buffer[i]) & 0x0F];
@@ -577,7 +583,53 @@ parseCommand(CyU3PDmaBuffer_t *inBuf, CyU3PDmaBuffer_t *outBuf) {
         outBuf->buffer[i] = 0;
     }
 
-    k = 0;
+    // Fetch control and dataLength fields
+    control = inBuf->buffer[0];
+    dataLength = inBuf->buffer[1];
+
+    // Validate I2C payload size
+    if (dataLength > CY_FX_I2C_PAYLOAD_SIZE) {
+        CyU3PDebugPrint(1, "Payload too big LENGTH=%d\r\n", dataLength);
+    }
+
+    // Command parser engine
+    if (control & CTRL_CONFIG) {
+        // Configuration command
+        i2cSpeed = control & CONFIG_SPEED;
+        inBuf->buffer[0] |= STAT_ACK;
+    } else if (control & CTRL_START) {
+        command = inBuf->buffer[2];
+        if (command & COM_INTERNAL) {
+            outBuf->buffer[0] |= STAT_VTARG;
+            if (command == COM_STATUS) {
+                if (control & CTRL_RW) {
+                    // Return status code
+                    outBuf->buffer[1] = power;          // Power
+                    outBuf->buffer[2] = i2cSpeed;       // I2C speed
+                    outBuf->buffer[0] |= STAT_ACK;      // acknowledge status
+                } else {
+                    // Write control code
+                    power = inBuf->buffer[3];
+                    outBuf->buffer[0] = STAT_ACK;       // acknowledge status
+                }
+            } else if (command == COM_VERSION) {
+                // Get version
+                for (i = 0; i < sizeof version; i++) {
+                    outBuf->buffer[i+1] = version[i];
+                }
+                outBuf->buffer[0] |= STAT_ACK;          // acknowledge status
+            } else {
+                CyU3PDebugPrint(1, "Unknown internal command %02X\r\n", command);
+            }
+        } else {
+            CyU3PDebugPrint(1, "I2C access is not implemented\r\n");
+        }
+    } else {
+        CyU3PDebugPrint(1, "No START bit\r\n");
+    }
+
+    strcpy(debugLine, "outBuf: ");
+    k = strlen(debugLine);
     for (i = 0; i < outBuf->count; i++) {
         debugLine[k++] = hexdigit[(outBuf->buffer[i]) >> 4];
         debugLine[k++] = hexdigit[(outBuf->buffer[i]) & 0x0F];
