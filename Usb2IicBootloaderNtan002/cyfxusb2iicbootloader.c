@@ -164,7 +164,7 @@ CyFxBulkLpApplnStart (
 
     CyU3PMemSet ((uint8_t *)&epCfg, 0, sizeof (epCfg));
     epCfg.enable = CyTrue;
-    epCfg.epType = CY_U3P_USB_EP_BULK;
+    epCfg.epType = CY_U3P_USB_EP_INTR;
     epCfg.burstLen = (usbSpeed == CY_U3P_SUPER_SPEED) ?
         (CY_FX_EP_BURST_LENGTH) : 1;
     epCfg.streams = 0;
@@ -369,7 +369,7 @@ CyFxBulkLpApplnUSBSetupCB (
                 case CY_U3P_USB_REPORT_DESCR:
                     status = CyU3PUsbSendEP0Data (
                         (CyFxUSBReportDscr[0] | ((uint16_t)CyFxUSBReportDscr[1] << 8)),
-                        &CyFxUSBReportDscr[2]
+                        (uint8_t *)&CyFxUSBReportDscr[2]
                     );
                     isHandled = CyTrue;
                     if (status == CY_U3P_SUCCESS) {
@@ -463,7 +463,7 @@ CyFxBulkLpApplnInit (void)
     /* Set the USB Enumeration descriptors */
 
     /* Super speed device descriptor. */
-    apiRetStatus = CyU3PUsbSetDesc(CY_U3P_USB_SET_SS_DEVICE_DESCR, NULL, (uint8_t *)CyFxUSB30DeviceDscr);
+    apiRetStatus = CyU3PUsbSetDesc(CY_U3P_USB_SET_SS_DEVICE_DESCR, 0, (uint8_t *)CyFxUSB30DeviceDscr);
     if (apiRetStatus != CY_U3P_SUCCESS)
     {
         CyU3PDebugPrint (4, "USB set device descriptor failed, Error code = %d\n", apiRetStatus);
@@ -471,7 +471,7 @@ CyFxBulkLpApplnInit (void)
     }
 
     /* High speed device descriptor. */
-    apiRetStatus = CyU3PUsbSetDesc(CY_U3P_USB_SET_HS_DEVICE_DESCR, NULL, (uint8_t *)CyFxUSB20DeviceDscr);
+    apiRetStatus = CyU3PUsbSetDesc(CY_U3P_USB_SET_HS_DEVICE_DESCR, 0, (uint8_t *)CyFxUSB20DeviceDscr);
     if (apiRetStatus != CY_U3P_SUCCESS)
     {
         CyU3PDebugPrint (4, "USB set device descriptor failed, Error code = %d\n", apiRetStatus);
@@ -479,7 +479,7 @@ CyFxBulkLpApplnInit (void)
     }
 
     /* BOS descriptor */
-    apiRetStatus = CyU3PUsbSetDesc(CY_U3P_USB_SET_SS_BOS_DESCR, NULL, (uint8_t *)CyFxUSBBOSDscr);
+    apiRetStatus = CyU3PUsbSetDesc(CY_U3P_USB_SET_SS_BOS_DESCR, 0, (uint8_t *)CyFxUSBBOSDscr);
     if (apiRetStatus != CY_U3P_SUCCESS)
     {
         CyU3PDebugPrint (4, "USB set configuration descriptor failed, Error code = %d\n", apiRetStatus);
@@ -487,7 +487,7 @@ CyFxBulkLpApplnInit (void)
     }
 
     /* Device qualifier descriptor */
-    apiRetStatus = CyU3PUsbSetDesc(CY_U3P_USB_SET_DEVQUAL_DESCR, NULL, (uint8_t *)CyFxUSBDeviceQualDscr);
+    apiRetStatus = CyU3PUsbSetDesc(CY_U3P_USB_SET_DEVQUAL_DESCR, 0, (uint8_t *)CyFxUSBDeviceQualDscr);
     if (apiRetStatus != CY_U3P_SUCCESS)
     {
         CyU3PDebugPrint (4, "USB set device qualifier descriptor failed, Error code = %d\n", apiRetStatus);
@@ -495,7 +495,7 @@ CyFxBulkLpApplnInit (void)
     }
 
     /* Super speed configuration descriptor */
-    apiRetStatus = CyU3PUsbSetDesc(CY_U3P_USB_SET_SS_CONFIG_DESCR, NULL, (uint8_t *)CyFxUSBSSConfigDscr);
+    apiRetStatus = CyU3PUsbSetDesc(CY_U3P_USB_SET_SS_CONFIG_DESCR, 0, (uint8_t *)CyFxUSBSSConfigDscr);
     if (apiRetStatus != CY_U3P_SUCCESS)
     {
         CyU3PDebugPrint (4, "USB set configuration descriptor failed, Error code = %d\n", apiRetStatus);
@@ -503,7 +503,7 @@ CyFxBulkLpApplnInit (void)
     }
 
     /* High speed configuration descriptor */
-    apiRetStatus = CyU3PUsbSetDesc(CY_U3P_USB_SET_HS_CONFIG_DESCR, NULL, (uint8_t *)CyFxUSBHSConfigDscr);
+    apiRetStatus = CyU3PUsbSetDesc(CY_U3P_USB_SET_HS_CONFIG_DESCR, 0, (uint8_t *)CyFxUSBHSConfigDscr);
     if (apiRetStatus != CY_U3P_SUCCESS)
     {
         CyU3PDebugPrint (4, "USB Set Other Speed Descriptor failed, Error Code = %d\n", apiRetStatus);
@@ -511,7 +511,7 @@ CyFxBulkLpApplnInit (void)
     }
 
     /* Full speed configuration descriptor */
-    apiRetStatus = CyU3PUsbSetDesc(CY_U3P_USB_SET_FS_CONFIG_DESCR, NULL, (uint8_t *)CyFxUSBFSConfigDscr);
+    apiRetStatus = CyU3PUsbSetDesc(CY_U3P_USB_SET_FS_CONFIG_DESCR, 0, (uint8_t *)CyFxUSBFSConfigDscr);
     if (apiRetStatus != CY_U3P_SUCCESS)
     {
         CyU3PDebugPrint (4, "USB Set Configuration Descriptor failed, Error Code = %d\n", apiRetStatus);
@@ -549,6 +549,39 @@ CyFxBulkLpApplnInit (void)
         CyU3PDebugPrint (4, "USB Connect failed, Error code = %d\n", apiRetStatus);
         CyFxAppErrorHandler(apiRetStatus);
     }
+}
+
+// Parse command in the in-bound packet
+uint8_t
+parseCommand(CyU3PDmaBuffer_t *inBuf, CyU3PDmaBuffer_t *outBuf) {
+    uint8_t     i;
+    uint8_t     k;
+    char        debugLine[512];
+    static const char hexdigit[16] = "0123456789ABCDEF";
+
+    k = 0;
+    for (i = 0; i < inBuf->count; i++) {
+        debugLine[k++] = hexdigit[(inBuf->buffer[i]) >> 4];
+        debugLine[k++] = hexdigit[(inBuf->buffer[i]) & 0x0F];
+        debugLine[k++] = ' ';
+    }
+    strcpy(&debugLine[k], "COUNT=%d SIZE=%d\r\n");
+    CyU3PDebugPrint(1, debugLine, inBuf->count, inBuf->size);
+
+    outBuf->count = CY_FX_EP_PACKET_SIZE;
+    for (i = 0; i < outBuf->count; i++) {
+        outBuf->buffer[i] = 0;
+    }
+
+    k = 0;
+    for (i = 0; i < outBuf->count; i++) {
+        debugLine[k++] = hexdigit[(outBuf->buffer[i]) >> 4];
+        debugLine[k++] = hexdigit[(outBuf->buffer[i]) & 0x0F];
+        debugLine[k++] = ' ';
+    }
+    strcpy(&debugLine[k], "COUNT=%d SIZE=%d\r\n");
+    CyU3PDebugPrint(1, debugLine, outBuf->count, outBuf->size);
+    return 0;
 }
 
 /* Entry function for the BulkLpAppThread. */
@@ -602,9 +635,8 @@ BulkLpAppThread_Entry (
                 }
             }
 
-            /* Copy the data from the producer channel to the consumer channel. 
-             * The inBuf_p.count holds the amount of valid data received. */
-            CyU3PMemCopy (outBuf_p.buffer, inBuf_p.buffer, inBuf_p.count);
+
+            parseCommand(&inBuf_p, &outBuf_p);
 
             /* Now discard the data from the producer channel so that the buffer is made available
              * to receive more data. */
@@ -626,7 +658,7 @@ BulkLpAppThread_Entry (
              * transmitted back to the USB host. Since the same data is sent back, the
              * count shall be same as received and the status field of the call shall
              * be 0 for default use case. */
-            status = CyU3PDmaChannelCommitBuffer (&glChHandleBulkLpOut, inBuf_p.count, 0);
+            status = CyU3PDmaChannelCommitBuffer (&glChHandleBulkLpOut, CY_FX_EP_PACKET_SIZE, 0);
             if (status != CY_U3P_SUCCESS)
             {
                 if (!glIsApplnActive)
