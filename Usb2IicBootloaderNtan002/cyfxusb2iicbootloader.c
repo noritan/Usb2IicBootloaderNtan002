@@ -50,6 +50,7 @@
 #include "cyu3usb.h"
 #include "cyu3uart.h"
 #include "cyu3utils.h"
+#include "cyu3i2c.h"
 
 CyU3PThread     BulkLpAppThread;	 /* Bulk loop application thread structure */
 CyU3PDmaChannel glChHandleBulkLpIn;      /* DMA MANUAL_IN channel handle.          */
@@ -588,6 +589,33 @@ CyFxBulkLpApplnInit (void)
     }
 }
 
+// Initialize I2C peripheral
+void CyFxI2CInit()
+{
+    CyU3PI2cConfig_t i2cConfig;
+    CyU3PReturnStatus_t apiRetStatus = CY_U3P_SUCCESS;
+    CyU3PMemSet ((uint8_t *)&i2cConfig, 0, sizeof(i2cConfig));
+
+    // Initialize the I2C module
+    apiRetStatus = CyU3PI2cInit();
+    if (apiRetStatus != CY_U3P_SUCCESS) {
+        CyU3PDebugPrint (4, "I2C initialization failed, Error code = %d\n", apiRetStatus);
+        CyFxAppErrorHandler(apiRetStatus);
+    }
+
+    // Configure the I2C block
+    i2cConfig.bitRate = 400000; // 400KHz only
+    i2cConfig.busTimeout = 0xFFFFFFFF;
+    i2cConfig.dmaTimeout = 0xFFFF;
+    i2cConfig.isDma = CyFalse;
+
+    apiRetStatus = CyU3PI2cSetConfig(&i2cConfig, NULL);
+    if (apiRetStatus != CY_U3P_SUCCESS) {
+        CyU3PDebugPrint (4, "I2C configuration failed, Error code = %d\n", apiRetStatus);
+        CyFxAppErrorHandler(apiRetStatus);
+    }
+}
+
 // Parse command in the in-bound packet
 uint8_t
 parseCommand(CyU3PDmaBuffer_t *inBuf, CyU3PDmaBuffer_t *outBuf) {
@@ -685,6 +713,9 @@ BulkLpAppThread_Entry (
 
     /* Initialize the bulk loop application */
     CyFxBulkLpApplnInit();
+
+    // Initialize I2C peripheral
+    CyFxI2CInit();
 
     for (;;)
     {
@@ -843,7 +874,7 @@ main (void)
     io_cfg.s0Mode = CY_U3P_SPORT_INACTIVE;
     io_cfg.s1Mode = CY_U3P_SPORT_INACTIVE;
     io_cfg.useUart   = CyTrue;
-    io_cfg.useI2C    = CyFalse;
+    io_cfg.useI2C    = CyTrue;
     io_cfg.useI2S    = CyFalse;
     io_cfg.useSpi    = CyFalse;
     io_cfg.lppMode   = CY_U3P_IO_MATRIX_LPP_UART_ONLY;
