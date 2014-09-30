@@ -626,6 +626,8 @@ parseCommand(CyU3PDmaBuffer_t *inBuf, CyU3PDmaBuffer_t *outBuf) {
     uint8_t     command;        // command code field
     uint8_t     slaveAddress;   // slave address field
     char        debugLine[512];
+    CyU3PReturnStatus_t apiRetStatus = CY_U3P_SUCCESS;
+    CyU3PI2cPreamble_t preamble;    // preamble for I2C packet
     static const uint8_t version[] = {0, 0, 0, 1, 0x01, 0x23, 0x00, 0xA5};
 
     strcpy(debugLine, "inBuf: ");
@@ -682,7 +684,48 @@ parseCommand(CyU3PDmaBuffer_t *inBuf, CyU3PDmaBuffer_t *outBuf) {
                 CyU3PDebugPrint(1, "Unknown internal command %02X\r\n", command);
             }
         } else {
-            CyU3PDebugPrint(1, "I2C access is not implemented\r\n");
+            // I2C bus access
+            slaveAddress = inBuf->buffer[2];
+            if (control & CTRL_RW) {
+                // READ operation
+                preamble.length    = 1;
+                preamble.buffer[0] = (slaveAddress << 1) | 0x01;
+                preamble.ctrlMask  = 0x0000;
+                // Start transfer
+                apiRetStatus = CyU3PI2cReceiveBytes(&preamble, &(outBuf->buffer[1]), dataLength, 1);
+                // Check error code
+                if (apiRetStatus == CY_U3P_SUCCESS) {
+                    outBuf->buffer[0] |= STAT_ACK;
+                } else if (apiRetStatus == CY_U3P_ERROR_FAILURE) {
+                } else {
+                    CyU3PDebugPrint (4, "I2C receive failed, Error code = %d\n", apiRetStatus);
+                    CyFxAppErrorHandler(apiRetStatus);
+                }
+//                CyU3PI2cWaitForAck(&preamble, 1);
+            } else {
+                // WRITE operation
+                preamble.length    = 1;
+                preamble.buffer[0] = (slaveAddress << 1);
+                preamble.ctrlMask  = 0x0000;
+                // Start transfer
+                apiRetStatus = CyU3PI2cTransmitBytes(&preamble, &(inBuf->buffer[3]), dataLength, 1);
+                // Check error code
+                if (apiRetStatus == CY_U3P_SUCCESS) {
+                    for (i = 0; i < dataLength; i++) {
+                        outBuf->buffer[i+1] = 1;
+                    }
+                    outBuf->buffer[0] |= STAT_ACK;
+                } else if (apiRetStatus == CY_U3P_ERROR_FAILURE) {
+                } else {
+                    CyU3PDebugPrint (4, "I2C transmit failed, Error code = %d\n", apiRetStatus);
+                    CyFxAppErrorHandler(apiRetStatus);
+                }
+//                CyU3PI2cWaitForAck(&preamble, 1);
+            }
+            if (!(control & CTRL_STOP)) {
+                CyU3PDebugPrint(1, "No STOP bit\r\n");
+                CyFxAppErrorHandler(apiRetStatus);
+            }
         }
     } else {
         CyU3PDebugPrint(1, "No START bit\r\n");
