@@ -49,6 +49,7 @@
 #include "cyfxusb2iicbootloader.h"
 #include "cyu3usb.h"
 #include "cyu3uart.h"
+#include "cyu3utils.h"
 
 CyU3PThread     BulkLpAppThread;	 /* Bulk loop application thread structure */
 CyU3PDmaChannel glChHandleBulkLpIn;      /* DMA MANUAL_IN channel handle.          */
@@ -60,6 +61,7 @@ CyBool_t glIsApplnActive = CyFalse;      /* Whether the loopback application is 
 uint8_t         i2cSpeed = CONFIG_400K;
 uint8_t         power = POWER_NONE;
 
+static const char hexdigit[16] = "0123456789ABCDEF";
 
 /* Application Error Handler */
 void
@@ -443,6 +445,7 @@ CyFxBulkLpApplnLPMRqtCB (
 void
 CyFxBulkLpApplnInit (void)
 {
+    uint32_t    i;
     CyU3PReturnStatus_t apiRetStatus = CY_U3P_SUCCESS;
     static uint8_t CyFxUSBSerialDscr[] __attribute__ ((aligned (32))) =
     {
@@ -453,6 +456,8 @@ CyFxBulkLpApplnInit (void)
         '0',0x00,'0',0x00,'0',0x00,'0',0x00,
         '0',0x00,'0',0x00,'0',0x00,'0',0x00,
     };
+    static uvint32_t *EFUSE_DIE_ID = ((uvint32_t *)0xE0055010);
+    uint32_t    die_id[2];
 
     /* Start the USB functionality. */
     apiRetStatus = CyU3PUsbStart();
@@ -556,6 +561,17 @@ CyFxBulkLpApplnInit (void)
     }
 
     /* String descriptor 3 */
+    CyU3PReadDeviceRegisters(EFUSE_DIE_ID, 2, die_id);
+    for (i = 0; i < 2; i++) {
+        CyFxUSBSerialDscr[i*16+ 2] = hexdigit[(die_id[i] >> 28) & 0xF];
+        CyFxUSBSerialDscr[i*16+ 4] = hexdigit[(die_id[i] >> 24) & 0xF];
+        CyFxUSBSerialDscr[i*16+ 6] = hexdigit[(die_id[i] >> 20) & 0xF];
+        CyFxUSBSerialDscr[i*16+ 8] = hexdigit[(die_id[i] >> 16) & 0xF];
+        CyFxUSBSerialDscr[i*16+10] = hexdigit[(die_id[i] >> 12) & 0xF];
+        CyFxUSBSerialDscr[i*16+12] = hexdigit[(die_id[i] >>  8) & 0xF];
+        CyFxUSBSerialDscr[i*16+14] = hexdigit[(die_id[i] >>  4) & 0xF];
+        CyFxUSBSerialDscr[i*16+16] = hexdigit[(die_id[i] >>  0) & 0xF];
+    }
     apiRetStatus = CyU3PUsbSetDesc(CY_U3P_USB_SET_STRING_DESCR, 3, (uint8_t *)CyFxUSBSerialDscr);
     if (apiRetStatus != CY_U3P_SUCCESS)
     {
@@ -582,7 +598,6 @@ parseCommand(CyU3PDmaBuffer_t *inBuf, CyU3PDmaBuffer_t *outBuf) {
     uint8_t     command;        // command code field
     uint8_t     slaveAddress;   // slave address field
     char        debugLine[512];
-    static const char hexdigit[16] = "0123456789ABCDEF";
     static const uint8_t version[] = {0, 0, 0, 1, 0x01, 0x23, 0x00, 0xA5};
 
     strcpy(debugLine, "inBuf: ");
