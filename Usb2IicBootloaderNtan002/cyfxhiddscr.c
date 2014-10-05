@@ -175,7 +175,7 @@ const uint8_t CyFxUSBHSConfigDscr[] __attribute__ ((aligned (32))) =
     0x29,0x00,                      /* Length of this descriptor and all sub descriptors */
     0x01,                           /* Number of interfaces */
     0x01,                           /* Configuration number */
-    0x00,                           /* COnfiguration string index */
+    0x04,                           /* Configuration string index */
     0x80,                           /* Config characteristics - bus powered */
     0x32,                           /* Max power consumption of device (in 2mA unit) : 100mA */
 
@@ -188,7 +188,7 @@ const uint8_t CyFxUSBHSConfigDscr[] __attribute__ ((aligned (32))) =
     0x03,                           /* Interface class HID */
     0x00,                           /* Interface sub class */
     0x00,                           /* Interface protocol code */
-    0x00,                           /* Interface descriptor string index */
+    0x05,                           /* Interface descriptor string index */
 
     /* HID Class Descriptor */
     0x09,                           /* HID Class Descriptor Length */
@@ -225,7 +225,7 @@ const uint8_t CyFxUSBFSConfigDscr[] __attribute__ ((aligned (32))) =
     0x29,0x00,                      /* Length of this descriptor and all sub descriptors */
     0x01,                           /* Number of interfaces */
     0x01,                           /* Configuration number */
-    0x00,                           /* COnfiguration string index */
+    0x04,                           /* Configuration string index */
     0x80,                           /* Config characteristics - bus powered */
     0x32,                           /* Max power consumption of device (in 2mA unit) : 100mA */
 
@@ -238,7 +238,7 @@ const uint8_t CyFxUSBFSConfigDscr[] __attribute__ ((aligned (32))) =
     0x03,                           /* Interface class HID */
     0x00,                           /* Interface sub class */
     0x00,                           /* Interface protocol code */
-    0x00,                           /* Interface descriptor string index */
+    0x05,                           /* Interface descriptor string index */
 
     /* HID Class Descriptor */
     0x09,                           /* HID Class Descriptor Length */
@@ -304,25 +304,49 @@ const uint8_t CyFxUSBStringLangIDDscr[] __attribute__ ((aligned (32))) =
 /* Standard manufacturer string descriptor */
 const uint8_t CyFxUSBManufactureDscr[] __attribute__ ((aligned (32))) =
 {
-    0x10,                           /* Descriptor size */
+    0x1Eu,                          /* Descriptor size */
     CY_U3P_USB_STRING_DESCR,        /* Device descriptor type */
-    'C',0x00,
-    'y',0x00,
-    'p',0x00,
-    'r',0x00,
-    'e',0x00,
-    's',0x00,
-    's',0x00
+     (uint8_t)'E', 0u,(uint8_t)'n', 0u,(uint8_t)'g', 0u,
+     (uint8_t)'i', 0u,(uint8_t)'n', 0u,(uint8_t)'e', 0u,
+     (uint8_t)'e', 0u,(uint8_t)'r', 0u,(uint8_t)' ', 0u,
+     (uint8_t)'g', 0u,(uint8_t)'r', 0u,(uint8_t)'o', 0u,
+     (uint8_t)'u', 0u,(uint8_t)'p', 0u,
 };
 
 /* Standard product string descriptor */
 const uint8_t CyFxUSBProductDscr[] __attribute__ ((aligned (32))) =
 {
-    0x08,                           /* Descriptor size */
+    0x32u,                          /* Descriptor size */
     CY_U3P_USB_STRING_DESCR,        /* Device descriptor type */
-    'F',0x00,
-    'X',0x00,
-    '3',0x00
+    (uint8_t)'H', 0u,(uint8_t)'I', 0u,(uint8_t)'D', 0u,
+    (uint8_t)' ', 0u,(uint8_t)'U', 0u,(uint8_t)'S', 0u,
+    (uint8_t)'B', 0u,(uint8_t)' ', 0u,(uint8_t)'t', 0u,
+    (uint8_t)'o', 0u,(uint8_t)' ', 0u,(uint8_t)'I', 0u,
+    (uint8_t)'I', 0u,(uint8_t)'C', 0u,(uint8_t)' ', 0u,
+    (uint8_t)'c', 0u,(uint8_t)'o', 0u,(uint8_t)'n', 0u,
+    (uint8_t)'v', 0u,(uint8_t)'e', 0u,(uint8_t)'r', 0u,
+    (uint8_t)'t', 0u,(uint8_t)'e', 0u,(uint8_t)'r', 0u,
+};
+
+/* Standard configuration string descriptor */
+const uint8_t CyFxUSBStringConfigDscr[] __attribute__ ((aligned (32))) =
+{
+    0x16u,                          /* Descriptor size */
+    CY_U3P_USB_STRING_DESCR,        /* Device descriptor type */
+    (uint8_t)'H', 0u,(uint8_t)'I', 0u,(uint8_t)'D', 0u,
+    (uint8_t)' ', 0u,(uint8_t)'C', 0u,(uint8_t)'o', 0u,
+    (uint8_t)'n', 0u,(uint8_t)'f', 0u,(uint8_t)'i', 0u,
+    (uint8_t)'g', 0u,
+};
+
+/* Standard interface string descriptor */
+const uint8_t CyFxUSBStringInterfDscr[] __attribute__ ((aligned (32))) =
+{
+    0x12u,                          /* Descriptor size */
+    CY_U3P_USB_STRING_DESCR,        /* Device descriptor type */
+    (uint8_t)'H', 0u,(uint8_t)'I', 0u,(uint8_t)'D', 0u,
+    (uint8_t)' ', 0u,(uint8_t)'R', 0u,(uint8_t)'_', 0u,
+    (uint8_t)'W', 0u,(uint8_t)'8', 0u,
 };
 
 /* Place this buffer as the last buffer so that no other variable / code shares

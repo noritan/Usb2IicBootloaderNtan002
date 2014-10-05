@@ -168,6 +168,8 @@ extern const uint8_t CyFxUSBReportDscr[];
 extern const uint8_t CyFxUSBStringLangIDDscr[];
 extern const uint8_t CyFxUSBManufactureDscr[];
 extern const uint8_t CyFxUSBProductDscr[];
+extern const uint8_t CyFxUSBStringConfigDscr[];
+extern const uint8_t CyFxUSBStringInterfDscr[];
 
 #include <cyu3externcend.h>
 

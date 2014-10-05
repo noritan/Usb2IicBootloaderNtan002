@@ -580,6 +580,22 @@ CyFxBulkLpApplnInit (void)
         CyFxAppErrorHandler(apiRetStatus);
     }
 
+    /* String descriptor 4 */
+    apiRetStatus = CyU3PUsbSetDesc(CY_U3P_USB_SET_STRING_DESCR, 4, (uint8_t *)CyFxUSBStringConfigDscr);
+    if (apiRetStatus != CY_U3P_SUCCESS)
+    {
+        CyU3PDebugPrint (4, "USB set string descriptor failed, Error code = %d\n", apiRetStatus);
+        CyFxAppErrorHandler(apiRetStatus);
+    }
+
+    /* String descriptor 5 */
+    apiRetStatus = CyU3PUsbSetDesc(CY_U3P_USB_SET_STRING_DESCR, 5, (uint8_t *)CyFxUSBStringInterfDscr);
+    if (apiRetStatus != CY_U3P_SUCCESS)
+    {
+        CyU3PDebugPrint (4, "USB set string descriptor failed, Error code = %d\n", apiRetStatus);
+        CyFxAppErrorHandler(apiRetStatus);
+    }
+
     /* Connect the USB Pins with super speed operation enabled. */
     apiRetStatus = CyU3PConnectState(CyTrue, CyFalse);
     if (apiRetStatus != CY_U3P_SUCCESS)
