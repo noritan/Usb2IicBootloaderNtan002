@@ -50,7 +50,7 @@
 #define CY_FX_I2C_PAYLOAD_SIZE          (CY_FX_EP_PACKET_SIZE-3)    // Max payload for I2C
 
 
-#define CY_FX_BULKLP_DMA_BUF_COUNT      (8)                       /* Bulk loop channel buffer count */
+#define CY_FX_BULKLP_DMA_BUF_COUNT      (2)                       /* Bulk loop channel buffer count */
 #define CY_FX_BULKLP_DMA_TX_SIZE        (0)                       /* DMA transfer size is set to infinite */
 #define CY_FX_BULKLP_THREAD_STACK       (0x1000)                  /* Bulk loop application thread stack size */
 #define CY_FX_BULKLP_THREAD_PRIORITY    (8)                       /* Bulk loop application thread priority */
