@@ -682,7 +682,7 @@ parseCommand(CyU3PDmaBuffer_t *inBuf, CyU3PDmaBuffer_t *outBuf) {
     if (control & CTRL_CONFIG) {
         // Configuration command
         i2cSpeed = control & CONFIG_SPEED;
-        inBuf->buffer[0] |= STAT_ACK;
+        outBuf->buffer[0] |= STAT_ACK;
     } else if (control & CTRL_START) {
         command = inBuf->buffer[2];
         if (command & COM_INTERNAL) {
