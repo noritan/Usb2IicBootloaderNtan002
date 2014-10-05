@@ -632,29 +632,37 @@ void CyFxI2CInit()
     }
 }
 
+// Show buffer content in UART
+void showBuffer(char *header, CyU3PDmaBuffer_t *buf) {
+    uint32_t    i;
+    char        *p;
+    char        dump[512];
+
+    p = dump;
+    for (i = 0; i < buf->count; i++) {
+        *p++ = hexdigit[(buf->buffer[i]) >> 4];
+        *p++ = hexdigit[(buf->buffer[i]) & 0x0F];
+        *p++ = ' ';
+    }
+    *p++ = 0;
+    CyU3PDebugPrint(1, "%s: %s COUNT=%d SIZE=%d\r\n",
+        header, dump, buf->count, buf->size
+    );
+}
+
 // Parse command in the in-bound packet
 uint8_t
 parseCommand(CyU3PDmaBuffer_t *inBuf, CyU3PDmaBuffer_t *outBuf) {
     uint8_t     i;
-    uint8_t     k;
     uint8_t     control;        // Control bits
     uint8_t     dataLength;     // data length field
     uint8_t     command;        // command code field
     uint8_t     slaveAddress;   // slave address field
-    char        debugLine[512];
     CyU3PReturnStatus_t apiRetStatus = CY_U3P_SUCCESS;
     CyU3PI2cPreamble_t preamble;    // preamble for I2C packet
     static const uint8_t version[] = {0, 0, 0, 1, 0x01, 0x23, 0x00, 0xA5};
 
-    strcpy(debugLine, "inBuf: ");
-    k = strlen(debugLine);
-    for (i = 0; i < inBuf->count; i++) {
-        debugLine[k++] = hexdigit[(inBuf->buffer[i]) >> 4];
-        debugLine[k++] = hexdigit[(inBuf->buffer[i]) & 0x0F];
-        debugLine[k++] = ' ';
-    }
-    strcpy(&debugLine[k], "COUNT=%d SIZE=%d\r\n");
-    CyU3PDebugPrint(1, debugLine, inBuf->count, inBuf->size);
+    showBuffer("inBuf", inBuf);
 
     outBuf->count = CY_FX_EP_PACKET_SIZE;
     for (i = 0; i < outBuf->count; i++) {
@@ -747,15 +755,7 @@ parseCommand(CyU3PDmaBuffer_t *inBuf, CyU3PDmaBuffer_t *outBuf) {
         CyU3PDebugPrint(1, "No START bit\r\n");
     }
 
-    strcpy(debugLine, "outBuf: ");
-    k = strlen(debugLine);
-    for (i = 0; i < outBuf->count; i++) {
-        debugLine[k++] = hexdigit[(outBuf->buffer[i]) >> 4];
-        debugLine[k++] = hexdigit[(outBuf->buffer[i]) & 0x0F];
-        debugLine[k++] = ' ';
-    }
-    strcpy(&debugLine[k], "COUNT=%d SIZE=%d\r\n");
-    CyU3PDebugPrint(1, debugLine, outBuf->count, outBuf->size);
+    showBuffer("outBuf", outBuf);
     return 0;
 }
 
