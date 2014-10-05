@@ -67,7 +67,7 @@
  */
 
 /* Burst length in 1 KB packets. Only applicable to USB 3.0. */
-#define CY_FX_EP_BURST_LENGTH                   (4)
+#define CY_FX_EP_BURST_LENGTH                   (1)
 
 /* Multiplication factor used when allocating DMA buffers to reduce DMA callback frequency. */
 #define CY_FX_DMA_SIZE_MULTIPLIER               (1)
@@ -78,13 +78,13 @@
 #else
 
 /* Burst length in 1 KB packets. Only applicable to USB 3.0. */
-#define CY_FX_EP_BURST_LENGTH                   (8)
+#define CY_FX_EP_BURST_LENGTH                   (1)
 
 /* Multiplication factor used when allocating DMA buffers to reduce DMA callback frequency. */
-#define CY_FX_DMA_SIZE_MULTIPLIER               (2)
+#define CY_FX_DMA_SIZE_MULTIPLIER               (1)
 
 /* Number of DMA buffers to be used. More buffers can give better throughput. */
-#define CY_FX_BULKSRCSINK_DMA_BUF_COUNT         (4)
+#define CY_FX_BULKSRCSINK_DMA_BUF_COUNT         (2)
 
 #endif
 
