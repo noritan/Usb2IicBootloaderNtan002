@@ -662,8 +662,6 @@ parseCommand(CyU3PDmaBuffer_t *inBuf, CyU3PDmaBuffer_t *outBuf) {
     CyU3PI2cPreamble_t preamble;    // preamble for I2C packet
     static const uint8_t version[] = {0, 0, 0, 1, 0x01, 0x23, 0x00, 0xA5};
 
-    showBuffer("inBuf", inBuf);
-
     outBuf->count = CY_FX_EP_PACKET_SIZE;
     for (i = 0; i < outBuf->count; i++) {
         outBuf->buffer[i] = 0;
@@ -676,6 +674,8 @@ parseCommand(CyU3PDmaBuffer_t *inBuf, CyU3PDmaBuffer_t *outBuf) {
     // Validate I2C payload size
     if (dataLength > CY_FX_I2C_PAYLOAD_SIZE) {
         CyU3PDebugPrint(1, "Payload too big LENGTH=%d\r\n", dataLength);
+        showBuffer("inBuf", inBuf);
+        showBuffer("outBuf", outBuf);
     }
 
     // Command parser engine
@@ -706,6 +706,8 @@ parseCommand(CyU3PDmaBuffer_t *inBuf, CyU3PDmaBuffer_t *outBuf) {
                 outBuf->buffer[0] |= STAT_ACK;          // acknowledge status
             } else {
                 CyU3PDebugPrint(1, "Unknown internal command %02X\r\n", command);
+                showBuffer("inBuf", inBuf);
+                showBuffer("outBuf", outBuf);
             }
         } else {
             // I2C bus access
@@ -748,14 +750,17 @@ parseCommand(CyU3PDmaBuffer_t *inBuf, CyU3PDmaBuffer_t *outBuf) {
             }
             if (!(control & CTRL_STOP)) {
                 CyU3PDebugPrint(1, "No STOP bit\r\n");
+                showBuffer("inBuf", inBuf);
+                showBuffer("outBuf", outBuf);
                 CyFxAppErrorHandler(apiRetStatus);
             }
         }
     } else {
         CyU3PDebugPrint(1, "No START bit\r\n");
+        showBuffer("inBuf", inBuf);
+        showBuffer("outBuf", outBuf);
     }
 
-    showBuffer("outBuf", outBuf);
     return 0;
 }
 
