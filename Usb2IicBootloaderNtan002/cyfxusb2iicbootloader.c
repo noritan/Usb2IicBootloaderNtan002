@@ -747,6 +747,9 @@ parseCommand(CyU3PDmaBuffer_t *inBuf, CyU3PDmaBuffer_t *outBuf) {
                     CyFxAppErrorHandler(apiRetStatus);
                 }
 //                CyU3PI2cWaitForAck(&preamble, 1);
+                // Wait for 15ms to complete command.
+                // This delay is required to support slow bootloader.
+                CyU3PThreadSleep(15);
             }
             if (!(control & CTRL_STOP)) {
                 CyU3PDebugPrint(1, "No STOP bit\r\n");
